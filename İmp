@@ -1,0 +1,101 @@
+ 
+QUESTION 1 – Direct-Mapped Cache
+Given:
+• Direct-mapped cache
+• 16 blocks → log₂(16) = 4 index bits
+• Block size = 8 bytes → log₂(8) = 3 offset bits
+• Address = 0x9C3A
+Solution:
+First, convert the address to binary.
+0x9C3A =
+1001 1100 0011 1010 (16 bits)
+Now divide the address:
+• Offset = 3 bits
+• Index = 4 bits
+• Tag = remaining bits
+Binary split:
+Tag | Index | Offset
+10011100001 | 1010 | 010
+Results:
+• Offset = 010₂ = 2
+• Index = 1010₂ = 10
+• Tag = 10011100001₂
+Explanation:
+The cache checks block index 10.
+The stored tag in block 10 is compared with the calculated tag.
+If they match, it is a cache hit. Otherwise, it is a cache miss.
+ 
+QUESTION 2 – 2-Way Set-Associative Cache
+Given:
+• 2-way set-associative cache
+• 8 sets → log₂(8) = 3 set index bits
+• Block size = 4 bytes → log₂(4) = 2 offset bits
+• Address = 0xA7F1
+Solution:
+Convert address to binary:
+0xA7F1 =
+1010 0111 1111 0001
+Split the address:
+• Offset = 2 bits
+• Set index = 3 bits
+• Tag = remaining bits
+Binary split:
+Tag | Set Index | Offset
+10100111111 | 000 | 01
+Results:
+• Offset = 01₂ = 1
+• Set index = 000₂ = 0
+• Tag = 10100111111₂
+Explanation:
+The address maps to set 0.
+Because it is 2-way set-associative, two blocks in set 0 are checked.
+The tag is compared with both blocks’ tags to find a hit.
+ 
+QUESTION 3 – Superscalar Pipeline Diagram (Explanation)
+Processor:
+• In-order
+• Two-way superscalar
+• Pipeline A: ALU + branches
+• Pipeline B: Load/Store
+• Full forwarding
+• No alignment problems
+Solution (Textual explanation):
+1. Instructions are fetched two at a time if possible.
+2. ALU instructions (ADD, MUL, ADDIU) go to Pipeline A.
+3. Load instructions (LW) go to Pipeline B.
+4. If two instructions need the same pipeline, one must wait.
+5. RAW hazards on registers R6 and R10 cause stalls when forwarding is not enough.
+6. Load-use hazards occur when an instruction uses a value loaded in the previous cycle.
+7. Because execution is in-order, later instructions cannot pass earlier stalled ones.
+This creates bubbles in the pipeline when dependencies exist.
+ 
+QUESTION 4 – Hazard Identification
+Code:
+ADD R5, R6, R7
+MUL R6, R7, R8
+LW R10, R6(0)
+ADDIU R7, R13, 1
+LW R10, R6(4)
+ADDIU R12, R13, 1
+LW R15, R15(4)
+ADD R6, R9, R10
+ADDIU R10, R10, R11
+ 
+RAW Hazards (Read After Write):
+• MUL R6, R7, R8 → LW R10, R6(0) (R6)
+• ADDIU R7, R13, 1 → MUL R6, R7, R8 (R7)
+• LW R10, R6(0) → ADD R6, R9, R10 (R10)
+• LW R10, R6(4) → ADD R6, R9, R10 (R10)
+• ADD R6, R9, R10 → LW R10, R6(4) (R6)
+• ADDIU R10, R10, R11 → ADD R6, R9, R10 (R10)
+ 
+WAW Hazards (Write After Write):
+• LW R10, R6(0) → LW R10, R6(4)
+• LW R10, R6(4) → ADDIU R10, R10, R11
+• MUL R6, R7, R8 → ADD R6, R9, R10
+ 
+WAR Hazards (Write After Read):
+• ADD R5, R6, R7 → MUL R6, R7, R8 (R7)
+• LW R10, R6(0) → ADDIU R7, R13, 1 (R7)
+• ADD R6, R9, R10 → ADDIU R10, R10, R11 (R10)
+ 
